@@ -7,9 +7,15 @@ import Arrived from "./components/Arrived";
 import Clients from "./components/Clients";
 import AssideMenu from "./components/AssideMenu";
 import Footer from "./components/Footer";
+import Offline from "./components/Offline";
 
 function App() {
 	const [items, setItems] = React.useState([]);
+	const [offlineStatus, setOfflineStatus] = React.useState(!navigator.onLine);
+
+	function handleOfflineStatus() {
+		setOfflineStatus(!navigator.onLine);
+	}
 
 	React.useEffect(() => {
 		(async function () {
@@ -25,11 +31,21 @@ function App() {
 			);
 			const { nodes } = await response.json();
 			setItems(nodes);
+
+			handleOfflineStatus();
+			window.addEventListener("online", handleOfflineStatus);
+			window.addEventListener("offline", handleOfflineStatus);
+
+			return () => {
+				window.removeEventListener("online", handleOfflineStatus);
+				window.removeEventListener("offline", handleOfflineStatus);
+			};
 		})();
-	}, []);
+	}, [offlineStatus]);
 
 	return (
 		<>
+			{offlineStatus && <Offline />}
 			<Header />
 			<Hero />
 			<Browse />
